@@ -39,7 +39,7 @@ namespace soup
 
 		static int lua_netIntel_getAsByIp(lua_State* L)
 		{
-			auto* as = netIntel::getAsByIp(checkIp(L, 1));
+			auto* as = netIntel::getAsByIp(checkIpAddr(L, 1));
 			pushMediumUserdata(L, as);
 			lua_newtable(L);
 			{
@@ -82,7 +82,7 @@ namespace soup
 
 		static int lua_netIntel_getLocationByIp(lua_State* L)
 		{
-			auto* location = netIntel::getLocationByIp(checkIp(L, 1));
+			auto* location = netIntel::getLocationByIp(checkIpAddr(L, 1));
 			pushMediumUserdata(L, location);
 			lua_newtable(L);
 			{
@@ -130,7 +130,7 @@ namespace soup
 
 		// Lua Helpers
 
-		[[nodiscard]] static IpAddr checkIp(lua_State* L, int i)
+		[[nodiscard]] static IpAddr checkIpAddr(lua_State* L, int i)
 		{
 			if (lua_type(L, i) == LUA_TSTRING)
 			{
