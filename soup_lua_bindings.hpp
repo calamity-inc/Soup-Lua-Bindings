@@ -16,16 +16,21 @@ namespace soup
 			lua_newtable(L);
 
 			// netIntel
-			const luaL_Reg functions[] = {
-				{"getAsByIp", &lua_netIntel_getAsByIp},
-				{"getLocationByIp", &lua_netIntel_getLocationByIp},
-				{nullptr, nullptr}
-			};
-			luaL_newlib(L, functions);
-			lua_setfield(L, -2, "netIntel");
+			{
+				const luaL_Reg functions[] = {
+					{"getAsByIp", &lua_netIntel_getAsByIp},
+					{"getLocationByIp", &lua_netIntel_getLocationByIp},
+					{nullptr, nullptr}
+				};
+				luaL_newlib(L, functions);
+				lua_setfield(L, -2, "netIntel");
+			}
 
 			lua_pushcfunction(L, &lua_getCountryName);
 			lua_setfield(L, -2, "getCountryName");
+
+			lua_pushcfunction(L, &lua_IpAddr);
+			lua_setfield(L, -2, "IpAddr");
 
 			lua_setglobal(L, "soup");
 		}
@@ -37,38 +42,40 @@ namespace soup
 			auto* as = netIntel::getAsByIp(checkIp(L, 1));
 			pushMediumUserdata(L, as);
 			lua_newtable(L);
-			lua_pushstring(L, "__index");
-			lua_pushcfunction(L, [](lua_State* L) -> int
 			{
-				switch (joaat::hash(luaL_checkstring(L, 2)))
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, [](lua_State* L) -> int
 				{
-				case joaat::hash("isValid"):
-					lua_pushcfunction(L, &lua_mm_isValid);
-					return 1;
-
-				case joaat::hash("number"):
-					lua_pushinteger(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->number);
-					return 1;
-
-				case joaat::hash("handle"):
-					lua_pushstring(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->handle);
-					return 1;
-
-				case joaat::hash("name"):
-					lua_pushstring(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->name);
-					return 1;
-
-				case joaat::hash("isHosting"):
-					lua_pushcfunction(L, [](lua_State* L) -> int
+					switch (joaat::hash(luaL_checkstring(L, 2)))
 					{
-						lua_pushboolean(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->isHosting());
+					case joaat::hash("isValid"):
+						lua_pushcfunction(L, &lua_mm_isValid);
 						return 1;
-					});
-					return 1;
-				}
-				return 0;
-			});
-			lua_settable(L, -3);
+
+					case joaat::hash("number"):
+						lua_pushinteger(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->number);
+						return 1;
+
+					case joaat::hash("handle"):
+						lua_pushstring(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->handle);
+						return 1;
+
+					case joaat::hash("name"):
+						lua_pushstring(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->name);
+						return 1;
+
+					case joaat::hash("isHosting"):
+						lua_pushcfunction(L, [](lua_State* L) -> int
+						{
+							lua_pushboolean(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->isHosting());
+							return 1;
+						});
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
 			lua_setmetatable(L, -2);
 			return 1;
 		}
@@ -78,30 +85,32 @@ namespace soup
 			auto* location = netIntel::getLocationByIp(checkIp(L, 1));
 			pushMediumUserdata(L, location);
 			lua_newtable(L);
-			lua_pushstring(L, "__index");
-			lua_pushcfunction(L, [](lua_State* L) -> int
 			{
-				switch (joaat::hash(luaL_checkstring(L, 2)))
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, [](lua_State* L) -> int
 				{
-				case joaat::hash("isValid"):
-					lua_pushcfunction(L, &lua_mm_isValid);
-					return 1;
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("isValid"):
+						lua_pushcfunction(L, &lua_mm_isValid);
+						return 1;
 
-				case joaat::hash("city"):
-					lua_pushstring(L, reinterpret_cast<netIntelLocationData*>(checkMediumUserdata(L, 1))->city);
-					return 1;
+					case joaat::hash("city"):
+						lua_pushstring(L, reinterpret_cast<netIntelLocationData*>(checkMediumUserdata(L, 1))->city);
+						return 1;
 
-				case joaat::hash("state"):
-					lua_pushstring(L, reinterpret_cast<netIntelLocationData*>(checkMediumUserdata(L, 1))->state);
-					return 1;
+					case joaat::hash("state"):
+						lua_pushstring(L, reinterpret_cast<netIntelLocationData*>(checkMediumUserdata(L, 1))->state);
+						return 1;
 
-				case joaat::hash("country_code"):
-					lua_pushstring(L, reinterpret_cast<netIntelLocationData*>(checkMediumUserdata(L, 1))->country_code.c_str());
-					return 1;
-				}
-				return 0;
-			});
-			lua_settable(L, -3);
+					case joaat::hash("country_code"):
+						lua_pushstring(L, reinterpret_cast<netIntelLocationData*>(checkMediumUserdata(L, 1))->country_code.c_str());
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
 			lua_setmetatable(L, -2);
 			return 1;
 		}
