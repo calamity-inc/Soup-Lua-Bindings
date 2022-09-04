@@ -2,7 +2,7 @@
 
 Although the Lua bindings themselves are compatible with vanilla Lua, some of the code samples provided here require [Pluto](https://plutolang.github.io/docs/Introduction/).
 
-## *userdata* soup.netIntel.getAsByIp(*int|string* ip)
+## *userdata* soup.netIntel.getAsByIp(*int|string|userdata* ipAddr)
 
 ```Lua
 if (as := soup.netIntel.getAsByIp("1.1.1.1")):isValid() then
@@ -10,12 +10,19 @@ if (as := soup.netIntel.getAsByIp("1.1.1.1")):isValid() then
 end
 ```
 
-## *userdata* soup.netIntel.getLocationByIp(*int|string* ip)
+## *userdata* soup.netIntel.getLocationByIp(*int|string|userdata* ipAddr)
 
 ```Lua
 if (loc := soup.netIntel.getLocationByIp("1.1.1.1")):isValid() then
 	print(loc.city .. ", " .. loc.state .. ", " .. loc.country_code)
 end
+```
+
+## *userdata* soup.IpAddr(*int|string|userdata* ipAddr)
+
+```Lua
+local ip = soup.IpAddr("1.1.1.1")
+print(tostring(ip) .. ", " .. ip:getReverseDns())
 ```
 
 ## *string|nil* soup.getCountryName(*string* country_code, *string* language_code = "EN")

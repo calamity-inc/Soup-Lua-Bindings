@@ -128,6 +128,50 @@ namespace soup
 			return 1;
 		}
 
+		static int lua_IpAddr(lua_State* L)
+		{
+			std::construct_at((IpAddr*)lua_newuserdata(L, sizeof(IpAddr)), checkIpAddr(L, 1));
+			lua_newtable(L);
+			{
+				lua_pushstring(L, "__gc");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					std::destroy_at((IpAddr*)lua_touserdata(L, 1));
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			{
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("getReverseDns"):
+						lua_pushcfunction(L, [](lua_State* L) -> int
+						{
+							lua_pushstring(L, reinterpret_cast<IpAddr*>(lua_touserdata(L, 1))->getReverseDns().c_str());
+							return 1;
+						});
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			{
+				lua_pushstring(L, "__tostring");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					lua_pushstring(L, reinterpret_cast<IpAddr*>(lua_touserdata(L, 1))->toString().c_str());
+					return 1;
+				});
+				lua_settable(L, -3);
+			}
+			lua_setmetatable(L, -2);
+			return 1;
+		}
+
 		// Lua Helpers
 
 		[[nodiscard]] static IpAddr checkIpAddr(lua_State* L, int i)
@@ -135,6 +179,10 @@ namespace soup
 			if (lua_type(L, i) == LUA_TSTRING)
 			{
 				return IpAddr(lua_tostring(L, i));
+			}
+			else if (lua_type(L, i) == LUA_TUSERDATA)
+			{
+				return *(IpAddr*)lua_touserdata(L, 1);
 			}
 			return IpAddr((uint32_t)luaL_checkinteger(L, i));
 		}
