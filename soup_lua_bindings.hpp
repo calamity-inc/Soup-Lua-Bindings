@@ -6,11 +6,14 @@
 #include <soup/joaat.hpp>
 #include <soup/IpAddr.hpp>
 #include <soup/netIntel.hpp>
+#include <soup/Vector3.hpp>
 
 namespace soup
 {
 	struct LuaBindings
 	{
+#define pushNewAndBeginMt(T, ...) pushNewAndBeginMtImpl<T>(L, "soup::" #T, __VA_ARGS__);
+
 		// C++ API
 
 		static void open(lua_State* L)
@@ -33,6 +36,12 @@ namespace soup
 
 			lua_pushcfunction(L, &lua_IpAddr);
 			lua_setfield(L, -2, "IpAddr");
+
+			lua_pushcfunction(L, &lua_Matrix);
+			lua_setfield(L, -2, "Matrix");
+
+			lua_pushcfunction(L, &lua_Vector3);
+			lua_setfield(L, -2, "Vector3");
 
 			lua_setglobal(L, "soup");
 		}
@@ -132,9 +141,7 @@ namespace soup
 
 		static int lua_IpAddr(lua_State* L)
 		{
-			std::construct_at((IpAddr*)lua_newuserdata(L, sizeof(IpAddr)), checkIpAddr(L, 1));
-			lua_newtable(L);
-			addDtorToMt<IpAddr>(L);
+			pushNewAndBeginMt(IpAddr, checkIpAddr(L, 1));
 			{
 				lua_pushstring(L, "__index");
 				lua_pushcfunction(L, [](lua_State* L) -> int
@@ -163,6 +170,72 @@ namespace soup
 				lua_settable(L, -3);
 			}
 			lua_setmetatable(L, -2);
+			return 1;
+		}
+
+		static int lua_Matrix(lua_State* L)
+		{
+			pushNewAndBeginMt(Matrix);
+			{
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("setPosRotXYZ"):
+						lua_pushcfunction(L, &lua_Matrix_setPosRotXYZ);
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			{
+				lua_pushstring(L, "__mul");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					checkTypename(L, 2, "soup::Vector3");
+					Matrix& m = *reinterpret_cast<Matrix*>(lua_touserdata(L, 1));
+					*pushNewVector3(L) = (m * *reinterpret_cast<Vector3*>(lua_touserdata(L, 2)));
+					return 1;
+				});
+				lua_settable(L, -3);
+			}
+			lua_setmetatable(L, -2);
+			return 1;
+		}
+
+		static int lua_Matrix_setPosRotXYZ(lua_State* L)
+		{
+			Vector3 pos, rot;
+			if (lua_gettop(L) == 3)
+			{
+				checkTypename(L, 2, "soup::Vector3"); pos = *reinterpret_cast<Vector3*>(lua_touserdata(L, 2));
+				checkTypename(L, 3, "soup::Vector3"); rot = *reinterpret_cast<Vector3*>(lua_touserdata(L, 3));
+			}
+			else
+			{
+				pos.x = (float)luaL_checknumber(L, 2);
+				pos.y = (float)luaL_checknumber(L, 3);
+				pos.z = (float)luaL_checknumber(L, 4);
+				rot.x = (float)luaL_checknumber(L, 5);
+				rot.y = (float)luaL_checknumber(L, 6);
+				rot.z = (float)luaL_checknumber(L, 7);
+			}
+			reinterpret_cast<Matrix*>(lua_touserdata(L, 1))->setPosRotXYZ(pos, rot);
+			return 0;
+		}
+
+		static int lua_Vector3(lua_State* L)
+		{
+			const auto args = lua_gettop(L);
+			auto v = pushNewVector3(L);
+			if (args >= 3)
+			{
+				v->x = (float)luaL_checknumber(L, 1);
+				v->y = (float)luaL_checknumber(L, 2);
+				v->z = (float)luaL_checknumber(L, 3);
+			}
 			return 1;
 		}
 
@@ -216,6 +289,26 @@ namespace soup
 			return 1;
 		}
 
+		template <typename T, typename...Args>
+		static T* pushNew(lua_State* L, Args&&...args)
+		{
+			return std::construct_at((T*)lua_newuserdata(L, sizeof(T)), std::forward<Args>(args)...);
+		}
+
+		template <typename T, typename...Args>
+		static T* pushNewAndBeginMtImpl(lua_State* L, const char* tn, Args&&...args)
+		{
+			auto inst = pushNew<T>(L, std::forward<Args>(args)...);
+			lua_newtable(L);
+			addDtorToMt<T>(L);
+			{
+				lua_pushstring(L, "__typename");
+				lua_pushstring(L, tn);
+				lua_settable(L, -3);
+			}
+			return inst;
+		}
+
 		template <typename T>
 		static void addDtorToMt(lua_State* L)
 		{
@@ -227,5 +320,81 @@ namespace soup
 			});
 			lua_settable(L, -3);
 		}
+
+		[[nodiscard]] static const char* getTypename(lua_State* L, int i)
+		{
+			const char* ret = nullptr;
+			if (lua_getmetatable(L, i))
+			{
+				if (lua_getfield(L, -1, "__typename"))
+				{
+					ret = lua_tostring(L, -1);
+					lua_pop(L, 1);
+				}
+				lua_pop(L, 1);
+			}
+			return ret;
+		}
+
+		static Vector3* pushNewVector3(lua_State* L)
+		{
+			auto v = pushNewAndBeginMt(Vector3);
+			{
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("x"):
+						lua_pushnumber(L, reinterpret_cast<Vector3*>(lua_touserdata(L, 1))->x);
+						return 1;
+
+					case joaat::hash("y"):
+						lua_pushnumber(L, reinterpret_cast<Vector3*>(lua_touserdata(L, 1))->y);
+						return 1;
+
+					case joaat::hash("z"):
+						lua_pushnumber(L, reinterpret_cast<Vector3*>(lua_touserdata(L, 1))->z);
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			{
+				lua_pushstring(L, "__newindex");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("x"):
+						reinterpret_cast<Vector3*>(lua_touserdata(L, 1))->x = (float)luaL_checknumber(L, 3);
+						return 1;
+
+					case joaat::hash("y"):
+						reinterpret_cast<Vector3*>(lua_touserdata(L, 1))->y = (float)luaL_checknumber(L, 3);
+						return 1;
+
+					case joaat::hash("z"):
+						reinterpret_cast<Vector3*>(lua_touserdata(L, 1))->z = (float)luaL_checknumber(L, 3);
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			lua_setmetatable(L, -2);
+			return v;
+		}
+
+		static void checkTypename(lua_State* L, int i, const char* tn)
+		{
+			if (strcmp(getTypename(L, i), tn) != 0)
+			{
+				luaL_typeerror(L, i, tn);
+			}
+		}
+
+#undef pushNewAndBeginMt
 	};
 }
