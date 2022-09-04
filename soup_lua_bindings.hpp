@@ -132,15 +132,7 @@ namespace soup
 		{
 			std::construct_at((IpAddr*)lua_newuserdata(L, sizeof(IpAddr)), checkIpAddr(L, 1));
 			lua_newtable(L);
-			{
-				lua_pushstring(L, "__gc");
-				lua_pushcfunction(L, [](lua_State* L) -> int
-				{
-					std::destroy_at((IpAddr*)lua_touserdata(L, 1));
-					return 0;
-				});
-				lua_settable(L, -3);
-			}
+			addDtorToMt<IpAddr>(L);
 			{
 				lua_pushstring(L, "__index");
 				lua_pushcfunction(L, [](lua_State* L) -> int
@@ -220,6 +212,18 @@ namespace soup
 		{
 			lua_pushboolean(L, checkMediumUserdataNullable(L, 1) != nullptr);
 			return 1;
+		}
+
+		template <typename T>
+		static void addDtorToMt(lua_State* L)
+		{
+			lua_pushstring(L, "__gc");
+			lua_pushcfunction(L, [](lua_State* L) -> int
+			{
+				std::destroy_at((T*)lua_touserdata(L, 1));
+				return 0;
+			});
+			lua_settable(L, -3);
 		}
 	};
 }
