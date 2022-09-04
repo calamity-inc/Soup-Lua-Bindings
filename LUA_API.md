@@ -38,7 +38,9 @@ print(soup.getCountryName("US", "ZH-CN"))
 
 Returns a soup::Matrix instance which provides `setPosRotXYZ` method and multiplication operator taking soup::Vector3.
 
-## *userdata* soup.Vector3()
-## *userdata* soup.Vector3(*number* x, *number* y, *number* z)
+<h2>
+	<i>userdata</i> soup.Vector3()<br>
+	<i>userdata</i> soup.Vector3(<i>number</i> x, <i>number</i> y, <i>number</i> z)
+</h2>
 
 Returns a soup::Vector3 instance.
