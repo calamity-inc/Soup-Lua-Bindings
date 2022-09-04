@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <soup/country_names.hpp>
 #include <soup/joaat.hpp>
 #include <soup/IpAddr.hpp>
