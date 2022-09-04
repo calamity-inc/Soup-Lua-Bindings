@@ -18,13 +18,6 @@ if (loc := soup.netIntel.getLocationByIp("1.1.1.1")):isValid() then
 end
 ```
 
-## *userdata* soup.IpAddr(*int|string|userdata* ipAddr)
-
-```Lua
-local ip = soup.IpAddr("1.1.1.1")
-print(tostring(ip) .. ", " .. ip:getReverseDns())
-```
-
 ## *string|nil* soup.getCountryName(*string* country_code, *string* language_code = "EN")
 
 ```Lua
@@ -32,6 +25,13 @@ print(soup.getCountryName("US", "EN"))
 print(soup.getCountryName("US", "DE"))
 print(soup.getCountryName("US", "FR"))
 print(soup.getCountryName("US", "ZH-CN"))
+```
+
+## *userdata* soup.IpAddr(*int|string|userdata* ipAddr)
+
+```Lua
+local ip = soup.IpAddr("1.1.1.1")
+print(tostring(ip) .. ", " .. ip:getReverseDns())
 ```
 
 ## *userdata* soup.Matrix()
