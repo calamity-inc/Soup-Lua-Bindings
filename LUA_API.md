@@ -14,7 +14,7 @@ end
 
 ```Lua
 if (loc := soup.netIntel.getLocationByIp("1.1.1.1")):isValid() then
-	print(loc.city .. ", " .. loc.state .. ", " .. loc.country_code)
+    print(loc.city .. ", " .. loc.state .. ", " .. loc.country_code)
 end
 ```
 
