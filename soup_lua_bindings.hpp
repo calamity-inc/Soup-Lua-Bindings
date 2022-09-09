@@ -251,7 +251,7 @@ namespace soup
 			{
 				return *(IpAddr*)lua_touserdata(L, 1);
 			}
-			return IpAddr((uint32_t)luaL_checkinteger(L, i));
+			return IpAddr(native_u32_t((uint32_t)luaL_checkinteger(L, i)));
 		}
 
 		static void pushMediumUserdata(lua_State* L, void* ud)
