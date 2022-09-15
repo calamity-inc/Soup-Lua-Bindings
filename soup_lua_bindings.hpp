@@ -389,7 +389,10 @@ namespace soup
 
 		[[nodiscard]] static bool isTypename(lua_State* L, int i, const char* tn)
 		{
-			return strcmp(getTypename(L, i), tn) == 0;
+			auto val_tn = getTypename(L, i);
+			return val_tn != nullptr
+				&& strcmp(val_tn, tn) == 0
+				;
 		}
 
 		static void checkTypename(lua_State* L, int i, const char* tn)
