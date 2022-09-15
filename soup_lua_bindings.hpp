@@ -387,9 +387,14 @@ namespace soup
 			return v;
 		}
 
+		[[nodiscard]] static bool isTypename(lua_State* L, int i, const char* tn)
+		{
+			return strcmp(getTypename(L, i), tn) == 0;
+		}
+
 		static void checkTypename(lua_State* L, int i, const char* tn)
 		{
-			if (strcmp(getTypename(L, i), tn) != 0)
+			if (!isTypename(L, i, tn))
 			{
 				luaL_typeerror(L, i, tn);
 			}
