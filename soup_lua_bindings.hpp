@@ -302,7 +302,7 @@ namespace soup
 			lua_newtable(L);
 			addDtorToMt<T>(L);
 			{
-				lua_pushstring(L, "__typename");
+				lua_pushstring(L, "__name");
 				lua_pushstring(L, tn);
 				lua_settable(L, -3);
 			}
@@ -326,7 +326,7 @@ namespace soup
 			const char* ret = nullptr;
 			if (lua_getmetatable(L, i))
 			{
-				if (lua_getfield(L, -1, "__typename"))
+				if (lua_getfield(L, -1, "__name"))
 				{
 					ret = lua_tostring(L, -1);
 					lua_pop(L, 1);
