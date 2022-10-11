@@ -151,7 +151,7 @@ namespace soup
 					case joaat::hash("getReverseDns"):
 						lua_pushcfunction(L, [](lua_State* L) -> int
 						{
-							lua_pushstring(L, reinterpret_cast<IpAddr*>(lua_touserdata(L, 1))->getReverseDns().c_str());
+							pushString(L, reinterpret_cast<IpAddr*>(lua_touserdata(L, 1))->getReverseDns());
 							return 1;
 						});
 						return 1;
@@ -164,7 +164,7 @@ namespace soup
 				lua_pushstring(L, "__tostring");
 				lua_pushcfunction(L, [](lua_State* L) -> int
 				{
-					lua_pushstring(L, reinterpret_cast<IpAddr*>(lua_touserdata(L, 1))->toString().c_str());
+					pushString(L, reinterpret_cast<IpAddr*>(lua_touserdata(L, 1))->toString());
 					return 1;
 				});
 				lua_settable(L, -3);
@@ -401,6 +401,16 @@ namespace soup
 			{
 				luaL_typeerror(L, i, tn);
 			}
+		}
+
+		static void pushString(lua_State* L, const char* str)
+		{
+			lua_pushstring(L, str);
+		}
+
+		static void pushString(lua_State* L, const std::string& str)
+		{
+			lua_pushlstring(L, str.data(), str.size());
 		}
 
 #undef pushNewAndBeginMt
