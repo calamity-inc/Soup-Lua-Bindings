@@ -2,6 +2,20 @@
 
 Although the Lua bindings themselves are compatible with vanilla Lua, some of the code samples provided here require [Pluto](https://plutolang.github.io/docs/Introduction/).
 
+## *string* soup.json.encode(*any* data, *bool* pretty = false)
+
+```Lua
+local data = {
+    {
+        key = "Soup",
+        value = true
+    }
+}
+print(soup.json.encode(data))
+```
+
+## *any* soup.json.decode(*string* json)
+
 ## *userdata* soup.netIntel.getAsByIp(*int|string|userdata* ipAddr)
 
 ```Lua
@@ -39,8 +53,8 @@ print(tostring(ip) .. ", " .. ip:getReverseDns())
 Returns a soup::Matrix instance which provides `setPosRotXYZ` method and multiplication operator taking soup::Vector3.
 
 <h2>
-	<i>userdata</i> soup.Vector3()<br>
-	<i>userdata</i> soup.Vector3(<i>number</i> x, <i>number</i> y, <i>number</i> z)
+    <i>userdata</i> soup.Vector3()<br>
+    <i>userdata</i> soup.Vector3(<i>number</i> x, <i>number</i> y, <i>number</i> z)
 </h2>
 
 Returns a soup::Vector3 instance.
