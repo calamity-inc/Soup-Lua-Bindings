@@ -13,6 +13,7 @@
 #include <soup/JsonString.hpp>
 #include <soup/IpAddr.hpp>
 #include <soup/netIntel.hpp>
+#include <soup/StringReader.hpp>
 #include <soup/Vector3.hpp>
 #include <soup/ZipReader.hpp>
 
@@ -317,6 +318,9 @@ namespace soup
 			lua_pushcfunction(L, &lua_FileReader);
 			lua_setfield(L, -2, "FileReader");
 
+			lua_pushcfunction(L, &lua_StringReader);
+			lua_setfield(L, -2, "StringReader");
+
 			lua_pushcfunction(L, &lua_ZipReader);
 			lua_setfield(L, -2, "ZipReader");
 		}
@@ -328,9 +332,16 @@ namespace soup
 			return 1;
 		}
 
+		static int lua_StringReader(lua_State* L)
+		{
+			pushNewAndBeginMt(StringReader, checkString(L, 1));
+			lua_setmetatable(L, -2);
+			return 1;
+		}
+
 		static int lua_ZipReader(lua_State* L)
 		{
-			checkTypename(L, 1, "soup::FileReader");
+			checkTypeExtendsIoSeekableReader(L, 1);
 			pushNewAndBeginMt(ZipReader, *reinterpret_cast<soup::ioSeekableReader*>(lua_touserdata(L, 1)));
 			{
 				lua_pushstring(L, "__index");
@@ -589,6 +600,13 @@ namespace soup
 			}
 		}
 
+		[[nodiscard]] static std::string checkString(lua_State* L, int i)
+		{
+			size_t size;
+			const char* data = luaL_checklstring(L, i, &size);
+			return std::string(data, size);
+		}
+
 		static void pushString(lua_State* L, const char* str)
 		{
 			lua_pushstring(L, str);
@@ -738,6 +756,16 @@ namespace soup
 			catch(std::exception& e)
 			{
 				luaL_error(L, e.what());
+			}
+		}
+
+		static void checkTypeExtendsIoSeekableReader(lua_State* L, int i)
+		{
+			if (!isTypename(L, i, "soup::FileReader")
+				&& !isTypename(L, i, "soup::StringReader")
+				)
+			{
+				luaL_typeerror(L, 1, "soup::ioSeekableReader");
 			}
 		}
 #pragma endregion Lua Helpers

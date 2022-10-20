@@ -56,6 +56,8 @@ print(tostring(ip) .. ", " .. ip:getReverseDns())
 
 ### *userdata* soup.FileReader(*string* path)
 
+### *userdata* soup.StringReader(*string* data)
+
 ### *userdata* soup.ZipReader(*userdata* seekable_reader)
 
 Note that the ZipReader takes a pointer to the reader instance, so a ZipReader instance must not reach scopes that the reader instance can't reach.
