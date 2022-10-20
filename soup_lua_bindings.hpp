@@ -16,6 +16,8 @@
 
 namespace soup
 {
+	// If you're not using Pluto, your compiler might raise warnings because the error functions don't have the [[noreturn]] attribute in stock lua.
+
 	struct LuaBindings
 	{
 #define pushNewAndBeginMt(T, ...) pushNewAndBeginMtImpl<T>(L, "soup::" #T, __VA_ARGS__);
@@ -537,7 +539,7 @@ namespace soup
 					return obj;
 				}
 			}
-			luaL_typeerror(L, i, "JSON-castable type"); // this will probably raise a compiler warning if you're not using Pluto. Kinda cringe.
+			luaL_typeerror(L, i, "JSON-castable type");
 		}
 
 		static void pushFromJson(lua_State* L, const JsonNode& node)
