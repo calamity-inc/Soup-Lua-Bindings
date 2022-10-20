@@ -3,6 +3,7 @@
 #include <memory>
 
 #include <soup/country_names.hpp>
+#include <soup/FileReader.hpp>
 #include <soup/joaat.hpp>
 #include <soup/json.hpp>
 #include <soup/JsonArray.hpp>
@@ -13,6 +14,7 @@
 #include <soup/IpAddr.hpp>
 #include <soup/netIntel.hpp>
 #include <soup/Vector3.hpp>
+#include <soup/ZipReader.hpp>
 
 namespace soup
 {
@@ -35,6 +37,7 @@ namespace soup
 			lua_newtable(L);
 
 			open_setDataFields(L);
+			open_setIoFields(L);
 			open_setMathFields(L);
 			open_setNetFields(L);
 
@@ -306,6 +309,100 @@ namespace soup
 			return 1;
 		}
 #pragma endregion Lua API - Math
+
+#pragma region Lua API - I/O
+		static void open_setIoFields(lua_State* L)
+		{
+			lua_pushcfunction(L, &lua_FileReader);
+			lua_setfield(L, -2, "FileReader");
+
+			lua_pushcfunction(L, &lua_ZipReader);
+			lua_setfield(L, -2, "ZipReader");
+		}
+
+		static int lua_FileReader(lua_State* L)
+		{
+			pushNewAndBeginMt(FileReader, luaL_checkstring(L, 1));
+			lua_setmetatable(L, -2);
+			return 1;
+		}
+
+		static int lua_ZipReader(lua_State* L)
+		{
+			checkTypename(L, 1, "soup::FileReader");
+			pushNewAndBeginMt(ZipReader, *reinterpret_cast<soup::ioSeekableReader*>(lua_touserdata(L, 1)));
+			{
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("getFileList"):
+						lua_pushcfunction(L, &lua_ZipReader_getFileList);
+						return 1;
+
+					case joaat::hash("getFileContents"):
+						lua_pushcfunction(L, &lua_ZipReader_getFileContents);
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			lua_setmetatable(L, -2);
+			return 1;
+		}
+
+		static int lua_ZipReader_getFileList(lua_State* L)
+		{
+			lua_newtable(L);
+			size_t i = 1;
+			for (const auto& f : reinterpret_cast<soup::ZipReader*>(lua_touserdata(L, 1))->getFileList())
+			{
+				lua_pushinteger(L, i++);
+				lua_newtable(L);
+				{
+					pushString(L, "name");
+					pushString(L, f.name);
+					lua_settable(L, -3);
+				}
+				{
+					pushString(L, "offset");
+					lua_pushinteger(L, f.offset);
+					lua_settable(L, -3);
+				}
+				lua_settable(L, -3);
+			}
+			return 1;
+		}
+
+		static int lua_ZipReader_getFileContents(lua_State* L)
+		{
+			return tryCatch(L, [](lua_State* L)
+			{
+				uint32_t offset;
+				if (lua_type(L, 2) == LUA_TTABLE)
+				{
+					if (lua_getfield(L, 2, "offset"))
+					{
+						offset = (uint32_t)luaL_checkinteger(L, -1);
+						lua_pop(L, 1);
+					}
+					else
+					{
+						offset = (uint32_t)luaL_checkinteger(L, 2);
+					}
+				}
+				else
+				{
+					offset = (uint32_t)luaL_checkinteger(L, 2);
+				}
+
+				pushString(L, reinterpret_cast<soup::ZipReader*>(lua_touserdata(L, 1))->getFileContents(offset));
+				return 1;
+			});
+		}
+#pragma endregion Lua API - I/O
 
 #pragma region Lua Helpers
 		[[nodiscard]] static IpAddr checkIpAddr(lua_State* L, int i)
@@ -610,6 +707,17 @@ namespace soup
 			}
 		}
 
+		static int tryCatch(lua_State* L, lua_CFunction f)
+		{
+			try
+			{
+				return f(L);
+			}
+			catch(std::exception& e)
+			{
+				luaL_error(L, e.what());
+			}
+		}
 #pragma endregion Lua Helpers
 
 #undef pushNewAndBeginMt

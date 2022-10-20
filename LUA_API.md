@@ -52,6 +52,22 @@ local ip = soup.IpAddr("1.1.1.1")
 print(tostring(ip) .. ", " .. ip:getReverseDns())
 ```
 
+## I/O
+
+### *userdata* soup.FileReader(*string* path)
+
+### *userdata* soup.ZipReader(*userdata* seekable_reader)
+
+Note that the ZipReader takes a pointer to the reader instance, so a ZipReader instance must not reach scopes that the reader instance can't reach.
+
+```Lua
+local fr = soup.FileReader("test.zip")
+local zr = soup.ZipReader(fr)
+for _, f in zr:getFileList() do
+    print(f.name .. ": " .. zr:getFileContents(f))
+end
+```
+
 ## Math
 
 ### *userdata* soup.Matrix()
