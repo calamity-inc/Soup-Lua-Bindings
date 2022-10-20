@@ -40,6 +40,7 @@ namespace soup
 			open_setIoFields(L);
 			open_setMathFields(L);
 			open_setNetFields(L);
+			open_setUtilFields(L);
 
 			lua_setglobal(L, "soup");
 		}
@@ -403,6 +404,27 @@ namespace soup
 			});
 		}
 #pragma endregion Lua API - I/O
+
+#pragma region Lua API - Util
+		static void open_setUtilFields(lua_State* L)
+		{
+			// string
+			{
+				const luaL_Reg functions[] = {
+					{"fromFile", &lua_string_fromFile},
+					{nullptr, nullptr}
+				};
+				luaL_newlib(L, functions);
+				lua_setfield(L, -2, "string");
+			}
+		}
+
+		static int lua_string_fromFile(lua_State* L)
+		{
+			pushString(L, string::fromFile(luaL_checkstring(L, 1)));
+			return 1;
+		}
+#pragma endregion Lua API - Util
 
 #pragma region Lua Helpers
 		[[nodiscard]] static IpAddr checkIpAddr(lua_State* L, int i)
