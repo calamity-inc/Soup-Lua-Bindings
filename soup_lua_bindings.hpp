@@ -20,6 +20,12 @@ namespace soup
 
 	struct LuaBindings
 	{
+#ifdef PLUTO_VERSION
+		static constexpr auto PLUTO_MAJOR = (PLUTO_VERSION[6] - '0');
+		static constexpr auto PLUTO_MINOR = (PLUTO_VERSION[8] - '0');
+		static constexpr auto PLUTO_PATCH = (PLUTO_VERSION[10] - '0');
+#endif
+
 #define pushNewAndBeginMt(T, ...) pushNewAndBeginMtImpl<T>(L, "soup::" #T, __VA_ARGS__);
 
 		// C++ API
