@@ -20,20 +20,31 @@ namespace soup
 
 	struct LuaBindings
 	{
+#define pushNewAndBeginMt(T, ...) pushNewAndBeginMtImpl<T>(L, "soup::" #T, __VA_ARGS__);
+
+#pragma region C++ API
+
 #ifdef PLUTO_VERSION
 		static constexpr auto PLUTO_MAJOR = (PLUTO_VERSION[6] - '0');
 		static constexpr auto PLUTO_MINOR = (PLUTO_VERSION[8] - '0');
 		static constexpr auto PLUTO_PATCH = (PLUTO_VERSION[10] - '0');
 #endif
 
-#define pushNewAndBeginMt(T, ...) pushNewAndBeginMtImpl<T>(L, "soup::" #T, __VA_ARGS__);
-
-		// C++ API
-
 		static void open(lua_State* L)
 		{
 			lua_newtable(L);
 
+			open_setDataFields(L);
+			open_setMathFields(L);
+			open_setNetFields(L);
+
+			lua_setglobal(L, "soup");
+		}
+#pragma endregion C++ API
+
+#pragma region Lua API - Data
+		static void open_setDataFields(lua_State* L)
+		{
 			// json
 			{
 				const luaL_Reg functions[] = {
@@ -44,34 +55,7 @@ namespace soup
 				luaL_newlib(L, functions);
 				lua_setfield(L, -2, "json");
 			}
-
-			// netIntel
-			{
-				const luaL_Reg functions[] = {
-					{"getAsByIp", &lua_netIntel_getAsByIp},
-					{"getLocationByIp", &lua_netIntel_getLocationByIp},
-					{nullptr, nullptr}
-				};
-				luaL_newlib(L, functions);
-				lua_setfield(L, -2, "netIntel");
-			}
-
-			lua_pushcfunction(L, &lua_getCountryName);
-			lua_setfield(L, -2, "getCountryName");
-
-			lua_pushcfunction(L, &lua_IpAddr);
-			lua_setfield(L, -2, "IpAddr");
-
-			lua_pushcfunction(L, &lua_Matrix);
-			lua_setfield(L, -2, "Matrix");
-
-			lua_pushcfunction(L, &lua_Vector3);
-			lua_setfield(L, -2, "Vector3");
-
-			lua_setglobal(L, "soup");
 		}
-
-		// Lua API
 
 		static int lua_json_encode(lua_State* L)
 		{
@@ -96,6 +80,28 @@ namespace soup
 			// JSON Tree -> Lua Table
 			pushFromJson(L, *root);
 			return 1;
+		}
+#pragma endregion Lua API - Data
+
+#pragma region Lua API - Net
+		static void open_setNetFields(lua_State* L)
+		{
+			// netIntel
+			{
+				const luaL_Reg functions[] = {
+					{"getAsByIp", &lua_netIntel_getAsByIp},
+					{"getLocationByIp", &lua_netIntel_getLocationByIp},
+					{nullptr, nullptr}
+				};
+				luaL_newlib(L, functions);
+				lua_setfield(L, -2, "netIntel");
+			}
+
+			lua_pushcfunction(L, &lua_getCountryName);
+			lua_setfield(L, -2, "getCountryName");
+
+			lua_pushcfunction(L, &lua_IpAddr);
+			lua_setfield(L, -2, "IpAddr");
 		}
 
 		static int lua_netIntel_getAsByIp(lua_State* L)
@@ -222,6 +228,17 @@ namespace soup
 			lua_setmetatable(L, -2);
 			return 1;
 		}
+#pragma endregion Lua API - Net
+
+#pragma region Lua API - Math
+		static void open_setMathFields(lua_State* L)
+		{
+			lua_pushcfunction(L, &lua_Matrix);
+			lua_setfield(L, -2, "Matrix");
+
+			lua_pushcfunction(L, &lua_Vector3);
+			lua_setfield(L, -2, "Vector3");
+		}
 
 		static int lua_Matrix(lua_State* L)
 		{
@@ -288,9 +305,9 @@ namespace soup
 			}
 			return 1;
 		}
+#pragma endregion Lua API - Math
 
-		// Lua Helpers
-
+#pragma region Lua Helpers
 		[[nodiscard]] static IpAddr checkIpAddr(lua_State* L, int i)
 		{
 			if (lua_type(L, i) == LUA_TSTRING)
@@ -592,6 +609,8 @@ namespace soup
 				lua_pushnil(L);
 			}
 		}
+
+#pragma endregion Lua Helpers
 
 #undef pushNewAndBeginMt
 	};
