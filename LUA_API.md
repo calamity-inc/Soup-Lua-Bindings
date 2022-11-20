@@ -86,3 +86,5 @@ Returns a soup::Vector3 instance.
 ## Util
 
 ### *string* soup.string.fromFile(*string* path)
+
+### *int* soup.version_compare(*string* a, *string* b)

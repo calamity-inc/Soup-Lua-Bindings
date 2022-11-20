@@ -15,6 +15,7 @@
 #include <soup/netIntel.hpp>
 #include <soup/StringReader.hpp>
 #include <soup/Vector3.hpp>
+#include <soup/version_compare.hpp>
 #include <soup/ZipReader.hpp>
 
 namespace soup
@@ -428,11 +429,32 @@ namespace soup
 				luaL_newlib(L, functions);
 				lua_setfield(L, -2, "string");
 			}
+
+			lua_pushcfunction(L, &lua_version_compare);
+			lua_setfield(L, -2, "version_compare");
 		}
 
 		static int lua_string_fromFile(lua_State* L)
 		{
 			pushString(L, string::fromFile(luaL_checkstring(L, 1)));
+			return 1;
+		}
+
+		static int lua_version_compare(lua_State* L)
+		{
+			auto c = version_compare(checkString(L, 1), checkString(L, 2));
+			if (c == 0)
+			{
+				lua_pushinteger(L, 0);
+			}
+			else if (c > 0)
+			{
+				lua_pushinteger(L, 1);
+			}
+			else
+			{
+				lua_pushinteger(L, -1);
+			}
 			return 1;
 		}
 #pragma endregion Lua API - Util
