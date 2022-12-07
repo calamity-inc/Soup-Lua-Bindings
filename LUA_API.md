@@ -2,6 +2,39 @@
 
 Although the Lua bindings themselves are compatible with vanilla Lua, some of the code samples provided here require [Pluto](https://plutolang.github.io/docs/Introduction/).
 
+## Audio
+
+### *userdata* soup.audDevice.getDefault()
+
+audDevice instances have `getName` and `open` methods.
+
+Calling `:open` returns an audPlayback instance. audPlayback instances have an `isPlaying` method.
+
+### *userdata* soup.audMixer()
+
+audMixer instances have a `stop_playback_when_no_sounds_are_playing` field and `setOutput` and `playSound` methods.
+
+### *userdata* soup.audWav(*userdata* seekable_reader)
+
+Note that the audWav takes a pointer to the reader instance, so a audWav instance must not reach scopes that the reader instance can't reach.
+
+audWav instances have a read-only `channels` field.
+
+**Example: Playing a WAV file**
+
+```Lua
+local fr = soup.FileReader([[path_to_wav_file]])
+local wav = soup.audWav(fr)
+local dev = soup.audDevice.getDefault()
+print("Playing on " .. dev:getName())
+local pb = dev:open(wav.channels)
+local mix = soup.audMixer()
+mix.stop_playback_when_no_sounds_are_playing = true
+mix:setOutput(pb)
+mix:playSound(wav)
+while pb:isPlaying() do sleep(10) end
+```
+
 ## Data
 
 ### *string* soup.json.encode(*any* data, *bool* pretty = false)

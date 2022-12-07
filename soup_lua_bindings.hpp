@@ -2,6 +2,10 @@
 
 #include <memory>
 
+#include <soup/audDevice.hpp>
+#include <soup/audMixer.hpp>
+#include <soup/audPlayback.hpp>
+#include <soup/audWav.hpp>
 #include <soup/country_names.hpp>
 #include <soup/FileReader.hpp>
 #include <soup/joaat.hpp>
@@ -38,6 +42,7 @@ namespace soup
 		{
 			lua_newtable(L);
 
+			open_setAudioFields(L);
 			open_setDataFields(L);
 			open_setIoFields(L);
 			open_setMathFields(L);
@@ -47,6 +52,139 @@ namespace soup
 			lua_setglobal(L, "soup");
 		}
 #pragma endregion C++ API
+
+#pragma region Lua API - Audio
+		static void open_setAudioFields(lua_State* L)
+		{
+			// audDevice
+			{
+				const luaL_Reg functions[] = {
+					{"getDefault", &lua_audDevice_getDefault},
+					{nullptr, nullptr}
+				};
+				luaL_newlib(L, functions);
+				lua_setfield(L, -2, "audDevice");
+			}
+
+			lua_pushcfunction(L, &lua_audMixer);
+			lua_setfield(L, -2, "audMixer");
+
+			lua_pushcfunction(L, &lua_audWav);
+			lua_setfield(L, -2, "audWav");
+		}
+
+		static int lua_audDevice_getDefault(lua_State* L)
+		{
+			pushNewAndBeginMt(audDevice, audDevice::getDefault());
+			{
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("getName"):
+						lua_pushcfunction(L, [](lua_State* L) -> int
+						{
+							pushString(L, reinterpret_cast<audDevice*>(lua_touserdata(L, 1))->getName());
+							return 1;
+						});
+						return 1;
+
+					case joaat::hash("open"):
+						lua_pushcfunction(L, [](lua_State* L) -> int
+						{
+							auto pb = pushNewAudPlayback(L);
+							pb->open(*reinterpret_cast<audDevice*>(lua_touserdata(L, 1)), (int)luaL_optinteger(L, 2, 1));
+							return 1;
+						});
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			lua_setmetatable(L, -2);
+			return 1;
+		}
+
+		static int lua_audMixer(lua_State* L)
+		{
+			pushNewAndBeginMt(audMixer);
+			{
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("stop_playback_when_no_sounds_are_playing"):
+						lua_pushboolean(L, reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->stop_playback_when_no_sounds_are_playing);
+						return 1;
+
+					case joaat::hash("setOutput"):
+						lua_pushcfunction(L, [](lua_State* L) -> int
+						{
+							checkTypename(L, 2, "soup::audPlayback");
+							reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->setOutput(*reinterpret_cast<audPlayback*>(lua_touserdata(L, 2)));
+							return 0;
+						});
+						return 1;
+
+					case joaat::hash("playSound"):
+						lua_pushcfunction(L, [](lua_State* L) -> int
+						{
+							checkTypeExtendsAudSound(L, 2);
+							reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->playSound(reinterpret_cast<audSound*>(lua_touserdata(L, 2)));
+							return 0;
+						});
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			{
+				lua_pushstring(L, "__newindex");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("stop_playback_when_no_sounds_are_playing"):
+						reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->stop_playback_when_no_sounds_are_playing = lua_toboolean(L, 2);
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			lua_setmetatable(L, -2);
+			return 1;
+		}
+
+		static int lua_audWav(lua_State* L)
+		{
+			checkTypeExtendsIoSeekableReader(L, 1);
+			return tryCatch(L, [](lua_State* L)
+			{
+				pushNewAndBeginMt(audWav, *reinterpret_cast<soup::ioSeekableReader*>(lua_touserdata(L, 1)));
+				{
+					lua_pushstring(L, "__index");
+					lua_pushcfunction(L, [](lua_State* L) -> int
+					{
+						switch (joaat::hash(luaL_checkstring(L, 2)))
+						{
+						case joaat::hash("channels"):
+							lua_pushinteger(L, reinterpret_cast<audWav*>(lua_touserdata(L, 1))->channels);
+							return 1;
+						}
+						return 0;
+					});
+					lua_settable(L, -3);
+				}
+				lua_setmetatable(L, -2);
+				return 1;
+			});
+		}
+#pragma endregion Lua API - Audio
 
 #pragma region Lua API - Data
 		static void open_setDataFields(lua_State* L)
@@ -789,6 +927,39 @@ namespace soup
 			{
 				luaL_typeerror(L, 1, "soup::ioSeekableReader");
 			}
+		}
+
+		static void checkTypeExtendsAudSound(lua_State* L, int i)
+		{
+			if (!isTypename(L, i, "soup::audWav"))
+			{
+				luaL_typeerror(L, 1, "soup::audSound");
+			}
+		}
+
+		static audPlayback* pushNewAudPlayback(lua_State* L)
+		{
+			auto v = pushNewAndBeginMt(audPlayback);
+			{
+				lua_pushstring(L, "__index");
+				lua_pushcfunction(L, [](lua_State* L) -> int
+				{
+					switch (joaat::hash(luaL_checkstring(L, 2)))
+					{
+					case joaat::hash("isPlaying"):
+						lua_pushcfunction(L, [](lua_State* L)
+						{
+							lua_pushboolean(L, reinterpret_cast<audPlayback*>(lua_touserdata(L, 1))->isPlaying());
+							return 1;
+						});
+						return 1;
+					}
+					return 0;
+				});
+				lua_settable(L, -3);
+			}
+			lua_setmetatable(L, -2);
+			return v;
 		}
 #pragma endregion Lua Helpers
 
