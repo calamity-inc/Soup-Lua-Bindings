@@ -12,7 +12,7 @@ Calling `:open` returns an audPlayback instance. audPlayback instances have an `
 
 ### *userdata* soup.audMixer()
 
-audMixer instances have a `stop_playback_when_no_sounds_are_playing` field and `setOutput` and `playSound` methods.
+audMixer instances have a `stop_playback_when_done` field and `setOutput` and `playSound` methods.
 
 ### *userdata* soup.audWav(*userdata* seekable_reader)
 
@@ -29,7 +29,7 @@ local dev = soup.audDevice.getDefault()
 print("Playing on " .. dev:getName())
 local pb = dev:open(wav.channels)
 local mix = soup.audMixer()
-mix.stop_playback_when_no_sounds_are_playing = true
+mix.stop_playback_when_done = true
 mix:setOutput(pb)
 mix:playSound(wav)
 while pb:isPlaying() do sleep(10) end

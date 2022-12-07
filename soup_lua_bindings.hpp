@@ -116,8 +116,8 @@ namespace soup
 				{
 					switch (joaat::hash(luaL_checkstring(L, 2)))
 					{
-					case joaat::hash("stop_playback_when_no_sounds_are_playing"):
-						lua_pushboolean(L, reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->stop_playback_when_no_sounds_are_playing);
+					case joaat::hash("stop_playback_when_done"):
+						lua_pushboolean(L, reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->stop_playback_when_done);
 						return 1;
 
 					case joaat::hash("setOutput"):
@@ -148,8 +148,8 @@ namespace soup
 				{
 					switch (joaat::hash(luaL_checkstring(L, 2)))
 					{
-					case joaat::hash("stop_playback_when_no_sounds_are_playing"):
-						reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->stop_playback_when_no_sounds_are_playing = lua_toboolean(L, 2);
+					case joaat::hash("stop_playback_when_done"):
+						reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->stop_playback_when_done = lua_toboolean(L, 2);
 						return 1;
 					}
 					return 0;
