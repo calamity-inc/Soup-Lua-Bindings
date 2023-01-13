@@ -2,6 +2,8 @@
 
 #include <memory>
 
+// assuming <lua.h> & <lauxlib.h> are already included!
+
 #include <soup/audDevice.hpp>
 #include <soup/audMixer.hpp>
 #include <soup/audPlayback.hpp>
@@ -14,8 +16,10 @@
 #include <soup/JsonBool.hpp>
 #include <soup/JsonFloat.hpp>
 #include <soup/JsonInt.hpp>
+#include <soup/JsonObject.hpp>
 #include <soup/JsonString.hpp>
 #include <soup/IpAddr.hpp>
+#include <soup/Matrix.hpp>
 #include <soup/netIntel.hpp>
 #include <soup/StringReader.hpp>
 #include <soup/Vector3.hpp>
@@ -40,6 +44,13 @@ namespace soup
 
 		static void open(lua_State* L)
 		{
+			open_pushTable(L);
+
+			lua_setglobal(L, "soup");
+		}
+
+		static void open_pushTable(lua_State* L)
+		{
 			lua_newtable(L);
 
 			open_setAudioFields(L);
@@ -48,8 +59,6 @@ namespace soup
 			open_setMathFields(L);
 			open_setNetFields(L);
 			open_setUtilFields(L);
-
-			lua_setglobal(L, "soup");
 		}
 #pragma endregion C++ API
 
