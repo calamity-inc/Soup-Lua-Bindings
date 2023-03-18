@@ -229,7 +229,7 @@ namespace soup
 		static int lua_json_decode(lua_State* L)
 		{
 			// String -> JSON Tree
-			auto root = json::decodeForDedicatedVariable(luaL_checkstring(L, 1));
+			auto root = json::decode(luaL_checkstring(L, 1));
 			// JSON Tree -> Lua Table
 			pushFromJson(L, *root);
 			return 1;
