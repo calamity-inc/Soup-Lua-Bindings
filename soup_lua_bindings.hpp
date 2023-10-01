@@ -99,36 +99,39 @@ namespace soup
 
 		static int lua_audDevice_getDefault(lua_State* L)
 		{
-			pushNewAndBeginMt(audDevice, audDevice::getDefault());
+			return tryCatch(L, [](lua_State* L)
 			{
-				lua_pushstring(L, "__index");
-				lua_pushcfunction(L, [](lua_State* L) -> int
+				pushNewAndBeginMt(audDevice, audDevice::getDefault());
 				{
-					switch (joaat::hash(luaL_checkstring(L, 2)))
+					lua_pushstring(L, "__index");
+					lua_pushcfunction(L, [](lua_State* L) -> int
 					{
-					case joaat::hash("getName"):
-						lua_pushcfunction(L, [](lua_State* L) -> int
+						switch (joaat::hash(luaL_checkstring(L, 2)))
 						{
-							pushString(L, reinterpret_cast<audDevice*>(lua_touserdata(L, 1))->getName());
+						case joaat::hash("getName"):
+							lua_pushcfunction(L, [](lua_State* L) -> int
+							{
+								pushString(L, reinterpret_cast<audDevice*>(lua_touserdata(L, 1))->getName());
+								return 1;
+							});
 							return 1;
-						});
-						return 1;
 
-					case joaat::hash("open"):
-						lua_pushcfunction(L, [](lua_State* L) -> int
-						{
-							auto pb = pushNewAudPlayback(L);
-							pb->open(*reinterpret_cast<audDevice*>(lua_touserdata(L, 1)), (int)luaL_optinteger(L, 2, 1));
+						case joaat::hash("open"):
+							lua_pushcfunction(L, [](lua_State* L) -> int
+							{
+								auto pb = pushNewAudPlayback(L);
+								pb->open(*reinterpret_cast<audDevice*>(lua_touserdata(L, 1)), (int)luaL_optinteger(L, 2, 1));
+								return 1;
+							});
 							return 1;
-						});
-						return 1;
-					}
-					return 0;
-				});
-				lua_settable(L, -3);
-			}
-			lua_setmetatable(L, -2);
-			return 1;
+						}
+						return 0;
+					});
+					lua_settable(L, -3);
+				}
+				lua_setmetatable(L, -2);
+				return 1;
+			});
 		}
 
 		static int lua_audMixer(lua_State* L)
