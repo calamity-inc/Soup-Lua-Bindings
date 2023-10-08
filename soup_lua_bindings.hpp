@@ -160,7 +160,7 @@ namespace soup
 						lua_pushcfunction(L, [](lua_State* L) -> int
 						{
 							checkTypeExtendsAudSound(L, 2);
-							reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->playSound(reinterpret_cast<audSound*>(lua_touserdata(L, 2)));
+							reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->playSound(*reinterpret_cast<SharedPtr<audSound>*>(lua_touserdata(L, 2)));
 							return 0;
 						});
 						return 1;
@@ -192,7 +192,7 @@ namespace soup
 			checkTypeExtendsIoSeekableReader(L, 1);
 			return tryCatch(L, [](lua_State* L)
 			{
-				pushNewAndBeginMt(audWav, *reinterpret_cast<soup::ioSeekableReader*>(lua_touserdata(L, 1)));
+				pushNewAndBeginMt(SharedPtr<soup::audWav>, soup::make_shared<audWav>(*reinterpret_cast<soup::ioSeekableReader*>(lua_touserdata(L, 1))));
 				{
 					lua_pushstring(L, "__index");
 					lua_pushcfunction(L, [](lua_State* L) -> int
@@ -200,7 +200,7 @@ namespace soup
 						switch (joaat::hash(luaL_checkstring(L, 2)))
 						{
 						case joaat::hash("channels"):
-							lua_pushinteger(L, reinterpret_cast<audWav*>(lua_touserdata(L, 1))->channels);
+							lua_pushinteger(L, (*reinterpret_cast<SharedPtr<audWav>*>(lua_touserdata(L, 1)))->channels);
 							return 1;
 						}
 						return 0;
@@ -967,9 +967,9 @@ namespace soup
 
 		static void checkTypeExtendsAudSound(lua_State* L, int i)
 		{
-			if (!isTypename(L, i, "soup::audWav"))
+			if (!isTypename(L, i, "soup::SharedPtr<soup::audWav>"))
 			{
-				luaL_typeerror(L, 1, "soup::audSound");
+				luaL_typeerror(L, 1, "soup::SharedPtr<soup::audSound>");
 			}
 		}
 
