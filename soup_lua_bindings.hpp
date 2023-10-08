@@ -160,8 +160,11 @@ namespace soup
 						lua_pushcfunction(L, [](lua_State* L) -> int
 						{
 							checkTypeExtendsAudSound(L, 2);
-							reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->playSound(*reinterpret_cast<SharedPtr<audSound>*>(lua_touserdata(L, 2)));
-							return 0;
+							return tryCatch(L, [](lua_State* L)
+							{
+								reinterpret_cast<audMixer*>(lua_touserdata(L, 1))->playSound(*reinterpret_cast<SharedPtr<audSound>*>(lua_touserdata(L, 2)));
+								return 0;
+							});
 						});
 						return 1;
 					}
