@@ -123,4 +123,14 @@ Returns a soup::Vector3 instance.
 
 ### *string* soup.string.fromFile(*string* path)
 
+> [!NOTE]
+> Consider using Lua's IO library for this instead.
+
+```Lua
+local function read_file(path)
+    local handle <close> = io.open(path, "rb") -- r read mode and b binary mode
+    return handle:read("*a") -- *a or *all reads the whole file
+end
+```
+
 ### *int* soup.version_compare(*string* a, *string* b)
