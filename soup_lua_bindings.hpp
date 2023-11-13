@@ -619,19 +619,7 @@ namespace soup
 
 		static int lua_version_compare(lua_State* L)
 		{
-			auto c = version_compare(checkString(L, 1), checkString(L, 2));
-			if (c == 0)
-			{
-				lua_pushinteger(L, 0);
-			}
-			else if (c > 0)
-			{
-				lua_pushinteger(L, 1);
-			}
-			else
-			{
-				lua_pushinteger(L, -1);
-			}
+			lua_pushinteger(L, SOUP_STRONG_ORDERING_TO_INT(version_compare(checkString(L, 1), checkString(L, 2))));
 			return 1;
 		}
 #pragma endregion Lua API - Util
