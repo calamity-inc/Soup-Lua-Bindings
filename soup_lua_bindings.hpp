@@ -629,7 +629,12 @@ namespace soup
 		{
 			if (lua_type(L, i) == LUA_TSTRING)
 			{
-				return IpAddr(lua_tostring(L, i));
+				IpAddr addr;
+				if (!addr.fromString(lua_tostring(L, i)))
+				{
+					luaL_argerror(L, i, "invalid ip address");
+				}
+				return addr;
 			}
 			else if (lua_type(L, i) == LUA_TUSERDATA)
 			{
