@@ -313,7 +313,7 @@ namespace soup
 						case joaat::hash("isHosting"):
 							lua_pushcfunction(L, [](lua_State* L) -> int
 							{
-								lua_pushboolean(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->isHosting());
+								lua_pushboolean(L, reinterpret_cast<netAs*>(checkMediumUserdata(L, 1))->isHosting(data_provider->getNetIntel(L)));
 								return 1;
 							});
 							return 1;
