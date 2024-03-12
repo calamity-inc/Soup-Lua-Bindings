@@ -192,10 +192,10 @@ namespace soup
 
 		static int lua_audWav(lua_State* L)
 		{
-			checkTypeExtendsIoSeekableReader(L, 1);
+			checkTypeExtendsReader(L, 1);
 			return tryCatch(L, [](lua_State* L)
 			{
-				pushNewAndBeginMt(SharedPtr<soup::audWav>, soup::make_shared<audWav>(*reinterpret_cast<soup::ioSeekableReader*>(lua_touserdata(L, 1))));
+				pushNewAndBeginMt(SharedPtr<soup::audWav>, soup::make_shared<audWav>(*reinterpret_cast<soup::Reader*>(lua_touserdata(L, 1))));
 				{
 					lua_pushstring(L, "__index");
 					lua_pushcfunction(L, [](lua_State* L) -> int
@@ -519,8 +519,8 @@ namespace soup
 
 		static int lua_ZipReader(lua_State* L)
 		{
-			checkTypeExtendsIoSeekableReader(L, 1);
-			pushNewAndBeginMt(ZipReader, *reinterpret_cast<soup::ioSeekableReader*>(lua_touserdata(L, 1)));
+			checkTypeExtendsReader(L, 1);
+			pushNewAndBeginMt(ZipReader, *reinterpret_cast<soup::Reader*>(lua_touserdata(L, 1)));
 			{
 				lua_pushstring(L, "__index");
 				lua_pushcfunction(L, [](lua_State* L) -> int
@@ -951,13 +951,13 @@ namespace soup
 			}
 		}
 
-		static void checkTypeExtendsIoSeekableReader(lua_State* L, int i)
+		static void checkTypeExtendsReader(lua_State* L, int i)
 		{
 			if (!isTypename(L, i, "soup::FileReader")
 				&& !isTypename(L, i, "soup::StringReader")
 				)
 			{
-				luaL_typeerror(L, 1, "soup::ioSeekableReader");
+				luaL_typeerror(L, 1, "soup::Reader");
 			}
 		}
 

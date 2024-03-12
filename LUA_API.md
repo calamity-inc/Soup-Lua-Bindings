@@ -14,7 +14,7 @@ Calling `:open` returns an audPlayback instance. audPlayback instances have an `
 
 audMixer instances have a `stop_playback_when_done` field and `setOutput` and `playSound` methods.
 
-### *userdata* soup.audWav(*userdata* seekable_reader)
+### *userdata* soup.audWav(*userdata* reader)
 
 Note that the audWav takes a pointer to the reader instance, so a audWav instance must not reach scopes that the reader instance can't reach.
 
@@ -94,7 +94,7 @@ print(tostring(ip) .. ", " .. ip:getReverseDns())
 
 ### *userdata* soup.StringReader(*string* data)
 
-### *userdata* soup.ZipReader(*userdata* seekable_reader)
+### *userdata* soup.ZipReader(*userdata* reader)
 
 Note that the ZipReader takes a pointer to the reader instance, so a ZipReader instance must not reach scopes that the reader instance can't reach.
 
