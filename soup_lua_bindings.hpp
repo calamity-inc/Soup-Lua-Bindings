@@ -597,24 +597,8 @@ namespace soup
 #pragma region Lua API - Util
 		static void open_setUtilFields(lua_State* L)
 		{
-			// string
-			{
-				const luaL_Reg functions[] = {
-					{"fromFile", &lua_string_fromFile},
-					{nullptr, nullptr}
-				};
-				luaL_newlib(L, functions);
-				lua_setfield(L, -2, "string");
-			}
-
 			lua_pushcfunction(L, &lua_version_compare);
 			lua_setfield(L, -2, "version_compare");
-		}
-
-		static int lua_string_fromFile(lua_State* L)
-		{
-			pushString(L, string::fromFile(luaL_checkstring(L, 1)));
-			return 1;
 		}
 
 		static int lua_version_compare(lua_State* L)
