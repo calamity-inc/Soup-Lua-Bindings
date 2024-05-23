@@ -35,25 +35,6 @@ mix:playSound(wav)
 while pb:isPlaying() do sleep(10) end
 ```
 
-## Data
-
-> [!NOTE]
-> When using Pluto, prefer to use [its JSON functions](https://pluto-lang.org/docs/Runtime%20Environment/Library%20Reference/JSON). They behave identically and are available in most (if not all) Pluto environments you may encounter.
-
-### *string* soup.json.encode(*any* data, *bool* pretty = false)
-
-```Lua
-local data = {
-    {
-        key = "Soup",
-        value = true
-    }
-}
-print(soup.json.encode(data))
-```
-
-### *any* soup.json.decode(*string* json)
-
 ## Net
 
 ### *userdata* soup.netIntel.getAsByIp(*int|string|userdata* ipAddr)
