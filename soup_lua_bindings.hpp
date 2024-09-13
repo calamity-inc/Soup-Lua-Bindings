@@ -16,7 +16,6 @@
 #include <soup/netIntel.hpp>
 #include <soup/StringReader.hpp>
 #include <soup/Vector3.hpp>
-#include <soup/version_compare.hpp>
 #include <soup/ZipReader.hpp>
 
 namespace soup
@@ -65,7 +64,6 @@ namespace soup
 			open_setIoFields(L);
 			open_setMathFields(L);
 			open_setNetFields(L);
-			open_setUtilFields(L);
 		}
 #pragma endregion C++ API
 
@@ -541,20 +539,6 @@ namespace soup
 			});
 		}
 #pragma endregion Lua API - I/O
-
-#pragma region Lua API - Util
-		static void open_setUtilFields(lua_State* L)
-		{
-			lua_pushcfunction(L, &lua_version_compare);
-			lua_setfield(L, -2, "version_compare");
-		}
-
-		static int lua_version_compare(lua_State* L)
-		{
-			lua_pushinteger(L, SOUP_STRONG_ORDERING_TO_INT(version_compare(checkString(L, 1), checkString(L, 2))));
-			return 1;
-		}
-#pragma endregion Lua API - Util
 
 #pragma region Lua Helpers
 		[[nodiscard]] static IpAddr checkIpAddr(lua_State* L, int i)

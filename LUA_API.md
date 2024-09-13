@@ -99,7 +99,3 @@ Returns a soup::Matrix instance which provides `setPosRotXYZ` method and multipl
 </h3>
 
 Returns a soup::Vector3 instance.
-
-## Util
-
-### *int* soup.version_compare(*string* a, *string* b)
