@@ -315,11 +315,11 @@ namespace soup
 		{
 			if (lua_gettop(L) >= 2)
 			{
-				lua_pushstring(L, getCountryName(luaL_checkstring(L, 1), luaL_checkstring(L, 2)));
+				pushString(L, getCountryName(luaL_checkstring(L, 1), luaL_checkstring(L, 2)));
 			}
 			else
 			{
-				lua_pushstring(L, getCountryName(luaL_checkstring(L, 1)));
+				pushString(L, getCountryName(luaL_checkstring(L, 1)));
 			}
 			return 1;
 		}
