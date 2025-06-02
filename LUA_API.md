@@ -4,6 +4,9 @@ Although the Lua bindings themselves are compatible with vanilla Lua, some of th
 
 ## I/O
 
+> [!WARNING]
+> These functions can easily be used incorrectly so new code is highly advised to use [pluto-zip](<https://github.com/PlutoLang/pluto-zip>) instead.
+
 ### *userdata* soup.FileReader(*string* path)
 
 ### *userdata* soup.StringReader(*string* data)
