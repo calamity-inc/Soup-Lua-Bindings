@@ -280,9 +280,12 @@ namespace soup
 		{
 			return tryCatch(L, [](lua_State* L)
 			{
-				auto* location = data_provider->getNetIntel(L).getLocationByIp(checkIpAddr(L, 1));
-				pushMediumUserdata(L, location);
-				lua_newtable(L);
+				auto location = data_provider->getNetIntel(L).getLocationByIp(checkIpAddr(L, 1));
+				if (!location)
+				{
+					return 0;
+				}
+				pushNewAndBeginMt(netIntelLocationData, *location);
 				{
 					lua_pushstring(L, "__index");
 					lua_pushcfunction(L, [](lua_State* L) -> int
