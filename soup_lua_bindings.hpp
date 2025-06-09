@@ -231,9 +231,12 @@ namespace soup
 		{
 			return tryCatch(L, [](lua_State* L)
 			{
-				auto* as = data_provider->getNetIntel(L).getAsByIp(checkIpAddr(L, 1));
-				pushMediumUserdata(L, as);
-				lua_newtable(L);
+				auto as = data_provider->getNetIntel(L).getAsByIp(checkIpAddr(L, 1));
+				if (!as)
+				{
+					return 0;
+				}
+				pushNewAndBeginMt(netAs, *as);
 				{
 					lua_pushstring(L, "__index");
 					lua_pushcfunction(L, [](lua_State* L) -> int
